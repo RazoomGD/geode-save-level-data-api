@@ -1,0 +1,28 @@
+{
+	"geode": "4.7.0",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "razoom.save_level_data_api",
+	"name": "Save Level Data API",
+	"version": "v1.0.0",
+	"developer": "RaZooM",
+	"description": "API mod for saving level-specific data ",
+
+	"dependencies": {
+		"cvolton.level-id-api": {
+			"version": "v1.0.0",
+			"importance": "required"
+		}
+	},
+
+	"tags": ["editor", "developer", "api"],
+
+	"links": {
+		"source": "https://github.com/RazoomGD/geode-save-level-data-api",
+		"community": "https://discord.gg/wcWvtKHP8n"
+	}
+}
