@@ -23,7 +23,7 @@ public:
         T const &value, 
         bool saveInTextObject = false,
         bool saveInSaveFile = true,
-        geode::Mod* mod = getMod()
+        geode::Mod* mod = geode::getMod()
     );
 
     template <class T>
@@ -32,7 +32,7 @@ public:
         std::string_view key, 
         bool checkTextObject = false,
         bool checkSaveFile = true,
-        geode::Mod* mod = getMod()
+        geode::Mod* mod = geode::getMod()
     );
 
 };

@@ -120,7 +120,7 @@ class $modify(EditorPauseLayer) {
 
 
 template <class T>
-static void SaveLevelDataAPI::setSavedValue(
+void SaveLevelDataAPI::setSavedValue(
 	GJGameLevel* level,
 	std::string_view key,
 	T const &value,
@@ -165,7 +165,7 @@ static void SaveLevelDataAPI::setSavedValue(
 
 
 template <class T>
-static geode::Result<T> SaveLevelDataAPI::getSavedValue(
+geode::Result<T> SaveLevelDataAPI::getSavedValue(
 	GJGameLevel* level,
 	std::string_view key,
 	bool checkTextObject,
