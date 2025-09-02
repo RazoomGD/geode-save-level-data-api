@@ -1,23 +1,144 @@
-# SaveLevelDataAPI
-This is where she makes a mod.
+# Save Level Data API
+
+*by RaZooM*
 
 <img src="logo.png" width="150" alt="the mod's logo" />
 
-*Update logo.png to change your mod's icon (please)*
 
-## Getting started
-We recommend heading over to [the getting started section on our docs](https://docs.geode-sdk.org/getting-started/) for useful info on what to do next.
+With this mod you can easily store and handle all level-specific data of your mod.
 
-## Build instructions
-For more info, see [our docs](https://docs.geode-sdk.org/getting-started/create-mod#build)
-```sh
-# Assuming you have the Geode CLI set up already
-geode build
+Mod provides two saving options:
+- saving values to the local save file - you values will be available locally on your device
+- saving values to the special text object inside the level - you values will be available to everyone even after sharing/publishing the level
+
+
+
+## Dependency
+
+```json
+"razoom.save_level_data_api": {
+    "importance": "required",
+    "version": ">=1.0.0"
+}
+```
+Add this to the dependencies in your `mod.json` file
+
+
+
+## Quick example
+
+```cpp
+class $modify(EditorUI) {
+    bool init(LevelEditorLayer* editorLayer) {
+        if (!EditorUI::init(editorLayer)) return false;
+
+        // saving value
+        SaveLevelDataAPI::setSavedValue(
+            editorLayer->m_level,   // GJGameLevel*
+            "my-value",             // key
+            90000000,               // value (can be any json-serializable type)
+            true,                   // save to the save file (default: true)
+            true                    // save to the text object inside the level (default: false)
+        );
+
+        // getting value
+        geode::Result<matjson::Value> result = SaveLevelDataApi::getSavedValue(
+            editorLayer->m_level,   // GJGameLevel*
+            "my-value",             // key
+            true,                   // get value from the save file (default: true)
+            true                    // get value from the text object if wasn't found in the save file (default: false)
+        );
+
+        int value = result.unwrapOrDefault().asInt().unwrapOr(0);
+        log::info("value: {}", value) // value: 90000000
+
+        return true;
+    }
+};
 ```
 
-# Resources
-* [Geode SDK Documentation](https://docs.geode-sdk.org/)
-* [Geode SDK Source Code](https://github.com/geode-sdk/geode/)
-* [Geode CLI](https://github.com/geode-sdk/cli)
-* [Bindings](https://github.com/geode-sdk/bindings/)
-* [Dev Tools](https://github.com/geode-sdk/DevTools)
+## API
+
+```cpp
+static void setSavedValue(
+    GJGameLevel* level, 
+    std::string_view key, 
+    matjson::Value const &value, 
+    bool saveInSaveFile = true,
+    bool saveInTextObject = false,
+    geode::Mod* mod = geode::getMod()
+);
+```
+Save value for the level:
+- `level` - the level
+- `key` - unique key of your value
+- `value` - value of any JSON-serializable type (read matjson [docs](https://github.com/geode-sdk/json))
+- `saveInSaveFile` - if value should be stored in the save file of YOUR mod
+- `saveInTextObject` - if value should be stored in the special text object inside the level
+- `mod` - mod
+
+```cpp
+static geode::Result<matjson::Value> getSavedValue(
+    GJGameLevel* level, 
+    std::string_view key, 
+    bool checkSaveFile = true,
+    bool checkTextObject = false,
+    geode::Mod* mod = geode::getMod()
+);
+```
+Get previously saved value for the level:
+- `level` - the level
+- `key` - unique key of your value
+- `checkSaveFile` - if value should be stored in the save file of YOUR mod
+- `checkTextObject` - if value should be stored in the special text object inside the level
+- `mod` - mod
+
+If both `checkSaveFile` and `checkTextObject` are `true` then it checks the save file first and only if value wasn't found there it checks the text object
+
+returns:
+- value or Err() if not found
+
+
+
+## Important notes!
+
+- If you save/get data to/from the text object (e.g `SaveLevelDataAPI::setSavedValue(?, ?, ?, ?, true)`) the level must be currently opened in the editor and `LevelEditorLayer::get()` must be not null
+
+- If you save data to the text object you must do it before the `EditorPauseLayer::saveLevel()` call. For example if you call `SaveLevelDataAPI::setSavedValue` in the EditorUI->m_fields destructor , you values won't be saved
+
+- If you save/get data to/from the save file (e.g `SaveLevelDataAPI::setSavedValue(?, ?, ?, true, ?)`) you can do it from **any** place in the game
+
+- Note that both text object and save file aren't updated instantly after you call `setSavedValue` - save file is updated when you exit the game (unless game crashes); text object is updated with the level saving (`EditorPauseLayer::saveLevel()`)
+
+
+
+
+## How it stores the data
+
+- In the save file of your mod:
+
+  ```json
+  {
+      "save_level_data_api": {    <--- root object for all values saved with Save Level Data API
+          "12291": {        <--- level internal id (assigned by the Editor Level ID API mod)
+              "my-value-1": 90000000    <--- value that you've saved
+          },
+          "12351": {
+              "my-value-1": 23423435,
+              "other-value": "hello",
+          }
+      },
+      ...
+      ...   <--- other saved values of your mod
+      ...
+  }
+  ```
+
+- In the text object inside the level:
+
+  ![image](assets/image-1.png)
+
+  This object is placed at (x,y) = (-9999,-9999). If you want to inspect this object, enable positioning to (0,0) in the mod settings
+
+
+ 

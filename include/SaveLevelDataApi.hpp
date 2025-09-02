@@ -16,22 +16,20 @@
 class SAVE_LEVEL_DATA__API_DLL SaveLevelDataAPI {
 public:
 
-    template <class T>
     static void setSavedValue(
         GJGameLevel* level, 
         std::string_view key, 
-        T const &value, 
-        bool saveInTextObject = false,
+        matjson::Value const &value, 
         bool saveInSaveFile = true,
+        bool saveInTextObject = false,
         geode::Mod* mod = geode::getMod()
     );
 
-    template <class T>
-    static geode::Result<T> getSavedValue(
+    static geode::Result<matjson::Value> getSavedValue(
         GJGameLevel* level, 
         std::string_view key, 
-        bool checkTextObject = false,
         bool checkSaveFile = true,
+        bool checkTextObject = false,
         geode::Mod* mod = geode::getMod()
     );
 

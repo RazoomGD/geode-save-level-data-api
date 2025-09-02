@@ -1,0 +1,19 @@
+{
+	"geode": "4.7.0",
+	"gd": {
+		"win": "2.2074"
+	},
+	"id": "razoom.save_level_data_api_test",
+	"name": "Save Level Data API Test",
+	"version": "v1.0.1",
+	"developer": "RaZooM",
+	"description": "---",
+	"dependencies": {
+		"razoom.save_level_data_api": {
+			"importance": "required",
+			"version": ">=1.0.0"
+		}
+	} 
+}
+
+

@@ -24,5 +24,14 @@
 	"links": {
 		"source": "https://github.com/RazoomGD/geode-save-level-data-api",
 		"community": "https://discord.gg/wcWvtKHP8n"
+	},
+
+	"settings": {
+		"debug-mode": {
+			"name": "Text object at {0,0} (for developers)",
+			"description": "Changes text object position to (0,0)",
+			"type": "bool",
+			"default": false
+		}
 	}
 }
