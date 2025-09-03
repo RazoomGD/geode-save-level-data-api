@@ -7,9 +7,9 @@
 
 With this mod you can easily store and handle all level-specific data of your mod.
 
-Mod provides two saving options:
-- saving values to the local save file - you values will be available locally on your device
-- saving values to the special text object inside the level - you values will be available to everyone even after sharing/publishing the level
+**Mod provides two saving options:**
+- saving values to the local **save file** - you values will be available locally on your device
+- saving values to the special **text object** inside the level - values that you saved will be available to everyone even after sharing/publishing the level. If they also use your mod, they can
 
 
 
@@ -77,6 +77,8 @@ Save value for the level:
 - `saveInTextObject` - if value should be stored in the special text object inside the level
 - `mod` - mod
 
+___
+
 ```cpp
 static geode::Result<matjson::Value> getSavedValue(
     GJGameLevel* level, 
@@ -92,11 +94,10 @@ Get previously saved value for the level:
 - `checkSaveFile` - if value should be stored in the save file of YOUR mod
 - `checkTextObject` - if value should be stored in the special text object inside the level
 - `mod` - mod
+- returns: the value or Err() if wasn't found
 
 If both `checkSaveFile` and `checkTextObject` are `true` then it checks the save file first and only if value wasn't found there it checks the text object
 
-returns:
-- value or Err() if not found
 
 
 
@@ -117,28 +118,31 @@ returns:
 
 - In the save file of your mod:
 
-  ```json
+  ```jsonc
   {
-      "save_level_data_api": {    <--- root object for all values saved with Save Level Data API
-          "12291": {        <--- level internal id (assigned by the Editor Level ID API mod)
-              "my-value-1": 90000000    <--- value that you've saved
+      "save_level_data_api": {    // <--- root object for all values saved with Save Level Data API
+          "12291": {        // <--- level internal id (assigned by the Editor Level ID API mod)
+              "my-value-1": 90000000    // <--- value that you've saved
           },
           "12351": {
               "my-value-1": 23423435,
               "other-value": "hello",
           }
       },
-      ...
-      ...   <--- other saved values of your mod
-      ...
+    
+      // other saved values of your mod
   }
   ```
 
 - In the text object inside the level:
 
-  ![image](assets/image-1.png)
-
   This object is placed at (x,y) = (-9999,-9999). If you want to inspect this object, enable positioning to (0,0) in the mod settings
 
+  ![image](assets/image-1.png)
 
+
+
+## Bugs, questions
+
+Please report me about any bugs here (in github issues) or on my [Discord](https://discord.gg/wcWvtKHP8n) server. Or ask me any questions if you have.
  
