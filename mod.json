@@ -8,7 +8,7 @@
 	},
 	"id": "razoom.save_level_data_api",
 	"name": "Save Level Data API",
-	"version": "v1.0.0",
+	"version": "v1.0.1",
 	"developer": "RaZooM",
 	"description": "API mod for saving level-specific data ",
 

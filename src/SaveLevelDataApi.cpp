@@ -36,28 +36,43 @@ namespace json_utils {
 
 class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 
+	static void onModify(auto& self) {
+		// first after original
+		if (!self.setHookPriority("LevelEditorLayer::createObjectsFromSetup", 50000)) {
+			log::warn("Failed to set hook priority");
+		}
+	}
+
+
 	struct Fields {
-		matjson::Value m_saveObject;
+		matjson::Value m_saveObject{};
 		bool m_textObjectLoaded = false;
 	};
 
-	
-	bool init(GJGameLevel* p0, bool p1) {
-		if (!LevelEditorLayer::init(p0, p1)) return false;
-		if (!m_fields->m_textObjectLoaded) loadTextObject();
-		m_fields->m_textObjectLoaded = true;
-		return true;
+
+	void createObjectsFromSetup(gd::string& p0) {
+		LevelEditorLayer::createObjectsFromSetup(p0);
+		if (!m_fields->m_textObjectLoaded) {
+			loadTextObject();
+			m_fields->m_textObjectLoaded = true;
+		}
 	}
 
 	
 	void saveValue(std::string_view modId, std::string_view key, matjson::Value const &value) {
-		if (!m_fields->m_textObjectLoaded) loadTextObject();
+		if (!m_fields->m_textObjectLoaded) {
+			log::error("Objects aren't loaded yet! Can't save the value!");
+			return;
+		}
 		json_utils::setVal(m_fields->m_saveObject, modId, key, value);
 	}
 	
 	
 	geode::Result<matjson::Value> getSavedValue(std::string_view modId, std::string_view key) {
-		if (!m_fields->m_textObjectLoaded) loadTextObject();
+		if (!m_fields->m_textObjectLoaded) {
+			log::error("Objects aren't loaded yet! Can't get saved value!");
+			return Err("Not loaded yet!");
+		}
 		return json_utils::getVal(m_fields->m_saveObject, modId, key);
 	}
 
@@ -68,26 +83,26 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 			auto obj = static_cast<GameObject*>(m_objects->objectAtIndex(i));
 			if (obj->m_objectID != 914) continue;
 			auto textObject = static_cast<TextGameObject*>(obj);
-			auto object = matjson::parse(textObject->m_text).unwrapOrDefault();
-			if (object.isObject() && object["save_level_data_api"].isObject()) {
-				matjson::Value earlySetValues = m_fields->m_saveObject;
-				// if found existing save object, merge it with early set values
-				m_fields->m_saveObject = object["save_level_data_api"];
-				for (auto& [modId, modValues] : earlySetValues) {
-					if (modValues.isObject()) {
-						for (auto& [key, value] : modValues) {
-							m_fields->m_saveObject[modId][key] = value;
-						}
-					}
-				}
-				bool isDev = Mod::get()->getSettingValue<bool>("debug-mode");
-				textObject->setPosition(isDev ? ccp(0,0) : ccp(-9999, -9999));
-				textObject->setRotation(0.f);
-				textObject->setScale(isDev ? 0.5f : 0.1f);
 
-				m_fields->m_textObjectLoaded = true;
-				break;
+			auto parsedJson = matjson::parse(textObject->m_text);
+			if (parsedJson.isErr()) continue;
+			auto body = parsedJson.unwrap().get("save_level_data_api");
+			if (body.isErr() || !body.unwrap().isObject()) continue;
+
+			m_fields->m_saveObject = body.unwrap();
+
+			if (Mod::get()->getSettingValue<bool>("debug-mode")) {
+				textObject->setPosition(ccp(0, 0));
+				textObject->setRotation(0.f);
+				textObject->setScale(0.5f);
+				auto keyCount = m_fields->m_saveObject.size();
+				log::info("Text object successfully loaded! Found saved values of {} mod(s)", keyCount);
+			} else {
+				textObject->setPosition(ccp(-9999, -9999));
+				textObject->setRotation(0.f);
+				textObject->setScale(0.1f);
 			}
+			break;
 		}
 	}
 
@@ -130,11 +145,17 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 			return;
 		}
 
-		bool isDev = Mod::get()->getSettingValue<bool>("debug-mode");
+		if (Mod::get()->getSettingValue<bool>("debug-mode")) {
+			textObject->setPosition(ccp(0, 0));
+			textObject->setRotation(0.f);
+			textObject->setScale(0.5f);
+			log::info("Text object successfully saved!");
+		} else {
+			textObject->setPosition(ccp(-9999, -9999));
+			textObject->setRotation(0.f);
+			textObject->setScale(0.1f);
+		}
 
-		textObject->setPosition(isDev ? ccp(0,0) : ccp(-9999, -9999));
-		textObject->setRotation(0.f);
-		textObject->setScale(isDev ? 0.5f : 0.1f);
 		textObject->updateTextObject(
 			matjson::makeObject(
 				{{"save_level_data_api", m_fields->m_saveObject}}
@@ -228,6 +249,12 @@ void SaveLevelDataAPI::setSavedValue(
 			log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
 			return;
 		}
+		if (lel->m_level != level) {
+			log::error("SaveLevelDataAPI::setSavedValue - You can't use 'saveInTextObject' option for a level that is not opened in the editor");
+			log::error("LevelEditorLayer::get()->m_level != level");
+			log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
+			return;
+		}
 		reinterpret_cast<SaveLevelDataApiLEL*>(lel)->saveValue(mod->getID(), key, value);
 	}
 };
@@ -272,6 +299,12 @@ geode::Result<matjson::Value> SaveLevelDataAPI::getSavedValue(
 			log::error("SaveLevelDataAPI::getSavedValue - You can't use 'checkTextObject' option if LevelEditorLayer::get() == nullptr");
 			log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
 			return Err("LevelEditorLayer::get() is nullptr");
+		}
+		if (lel->m_level != level) {
+			log::error("SaveLevelDataAPI::getSavedValue - You can't use 'checkTextObject' option for a level that is not opened in the editor");
+			log::error("LevelEditorLayer::get()->m_level != level");
+			log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
+			return Err("LevelEditorLayer::get()->m_level != level");
 		}
 		auto res = reinterpret_cast<SaveLevelDataApiLEL*>(lel)->getSavedValue(mod->getID(), key);
 		if (res.isOk()) {
