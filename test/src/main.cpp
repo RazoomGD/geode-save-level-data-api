@@ -13,28 +13,50 @@ using namespace geode::prelude;
 class $modify(EditorUI) {
 
 	bool init(LevelEditorLayer* editorLayer) {
+
+		// getting value
+		geode::Result<matjson::Value> result = SaveLevelDataAPI::getSavedValue(
+			editorLayer->m_level,
+			"my-value-1",
+			false,
+			true
+		);
+
+		int value = result.unwrapOrDefault().asInt().unwrapOr(0);
+		log::info("old value (obj): {}", value);
+
+
+		result = SaveLevelDataAPI::getSavedValue(
+			editorLayer->m_level,
+			"my-value-1",
+			true,
+			false
+		);
+
+		value = result.unwrapOrDefault().asInt().unwrapOr(0);
+		log::info("old value (file): {}", value);
 		
 		if (!EditorUI::init(editorLayer)) return false;
 
 		// saving value
 		SaveLevelDataAPI::setSavedValue(
-			m_editorLayer->m_level,	// GJGameLevel*
-			"my-value-1",    		// key
-			90000000,				// value (can be any json-serializable type)
-			true, 					// save to the save file (default: true)
-			true					// save to the text object inside the level (default: false)
+			editorLayer->m_level,
+			"my-value-1",
+			70000000,
+			true,
+			true
 		);
 
 		// getting value
-		geode::Result<matjson::Value> result = SaveLevelDataAPI::getSavedValue(
-			m_editorLayer->m_level,	// GJGameLevel*
-			"my-value-1",    		// key
-			true,					// get value from the save file (default: true)
-			true					// get value from the text object if wasn't found in the save file (default: false)
+		result = SaveLevelDataAPI::getSavedValue(
+			editorLayer->m_level,
+			"my-value-1",
+			true,
+			true
 		);
 
-		int value = result.unwrapOrDefault().asInt().unwrapOr(0);
-		log::info("value: {}", value); // value: 90000000
+		value = result.unwrapOrDefault().asInt().unwrapOr(0);
+		log::info("value: {}", value);
 
 		return true;
 	}
