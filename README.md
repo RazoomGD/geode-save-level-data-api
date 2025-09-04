@@ -15,13 +15,19 @@ With this mod you can easily store and handle all level-specific data of your mo
 
 ## Dependency
 
+Add this to the dependencies in your `mod.json` file:
+
 ```json
 "razoom.save_level_data_api": {
     "importance": "required",
     "version": ">=1.0.0"
 }
 ```
-Add this to the dependencies in your `mod.json` file
+
+And this to your `.cpp` file:
+```cpp
+#include <razoom.save_level_data_api/include/SaveLevelDataApi.hpp>
+```
 
 
 
