@@ -84,6 +84,9 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 			if (obj->m_objectID != 914) continue;
 			auto textObject = static_cast<TextGameObject*>(obj);
 
+			if (textObject->m_text.size() < 2) continue;
+			if (textObject->m_text.at(0) != '{') continue;
+
 			auto parsedJson = matjson::parse(textObject->m_text);
 			if (parsedJson.isErr()) continue;
 			auto body = parsedJson.unwrap().get("save_level_data_api");
