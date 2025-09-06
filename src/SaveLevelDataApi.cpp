@@ -119,13 +119,20 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 		for (int i = 0; i < m_objects->count(); i++) {
 			auto obj = static_cast<GameObject*>(m_objects->objectAtIndex(i));
 			if (obj->m_objectID != 914) continue;
-			auto object = matjson::parse(static_cast<TextGameObject*>(obj)->m_text).unwrapOrDefault();
-			if (object.contains("save_level_data_api")) {
-				if (textObject) {
-					toRemove->addObject(obj); // remove duplicates
-				} else {
-					textObject = static_cast<TextGameObject*>(obj);
-				}
+			auto tmpTextObject = static_cast<TextGameObject*>(obj);
+			
+			if (tmpTextObject->m_text.size() < 2) continue;
+			if (tmpTextObject->m_text.at(0) != '{') continue;
+			
+			auto parsedJson = matjson::parse(tmpTextObject->m_text);
+			if (parsedJson.isErr()) continue;
+			auto body = parsedJson.unwrap().get("save_level_data_api");
+			if (body.isErr() || !body.unwrap().isObject()) continue;
+
+			if (textObject) {
+				toRemove->addObject(tmpTextObject); // remove duplicates
+			} else {
+				textObject = tmpTextObject;
 			}
 		}
 
