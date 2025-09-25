@@ -54,7 +54,7 @@ class $modify(EditorUI) {
         );
 
         // getting value
-        geode::Result<matjson::Value> result = SaveLevelDataApi::getSavedValue(
+        geode::Result<matjson::Value> result = SaveLevelDataAPI::getSavedValue(
             editorLayer->m_level,   // GJGameLevel*
             "my-value",             // key
             true,                   // get value from the save file (default: true)
