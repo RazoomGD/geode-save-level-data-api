@@ -3,6 +3,7 @@
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/EditorPauseLayer.hpp>
 #include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 
 #include <razoom.save_level_data_api/include/SaveLevelDataApi.hpp>
 
@@ -63,3 +64,36 @@ class $modify(EditorUI) {
 };
 
 
+class $modify(PlayLayer) {
+
+	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
+		if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+		
+		auto result = SaveLevelDataAPI::getSavedValue(
+			m_level,
+			"my-value-1",
+			false,
+			true
+		);
+		
+		auto value = result.unwrapOrDefault().asInt().unwrapOr(0);
+		log::info("value from init: {}", value);
+
+		return true;
+	}
+
+	void createObjectsFromSetupFinished() {
+
+		PlayLayer::createObjectsFromSetupFinished();
+
+		auto result = SaveLevelDataAPI::getSavedValue(
+			m_level,
+			"my-value-1",
+			false,
+			true
+		);
+		
+		auto value = result.unwrapOrDefault().asInt().unwrapOr(0);
+		log::info("value after setup: {}", value);
+	}
+};
