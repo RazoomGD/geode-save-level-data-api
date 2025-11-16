@@ -83,6 +83,28 @@ class $modify(EditorUI) {
 };
 ```
 
+If you want to access the text object data on `PlayLayer`:
+
+```cpp
+class $modify(PlayLayer) {
+    void createObjectsFromSetupFinished() {
+
+        PlayLayer::createObjectsFromSetupFinished();
+
+        auto result = SaveLevelDataAPI::getSavedValue(
+            m_level,
+            "my-value-1",   // key
+            false,          // don't check locally saved data
+            true            // check the text object
+        );
+
+        auto value = result.unwrapOrDefault().asInt().unwrapOr(0);
+        log::info("value is: {}", value);
+    }
+}
+```
+
+
 ## Data in text objects
 
 *Read this if you want to store the data of your mod in text object*
@@ -93,7 +115,7 @@ class $modify(EditorUI) {
   - You can enable the **debug mode** in mod settings to preview the text object at {0,0} coordinates
 
 - On `PlayLayer` you have a **read-only** access to the text object data:
-  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, it is **NOT** available in `PlayLayer::init`. First place data is available is `PlayLayer::createObjectsFromSetupFinished`
+  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, data is **NOT ALWAYS** available in `PlayLayer::init`. First place data is available is `PlayLayer::createObjectsFromSetupFinished`. So, please, get your data like in the example above.
   - Data is read-only
   - Minimum mod version is `v1.0.3`
 

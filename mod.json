@@ -1,5 +1,5 @@
 {
-	"geode": "4.9.0",
+	"geode": "4.7.0",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -10,7 +10,7 @@
 	"name": "Save Level Data API",
 	"version": "v1.0.3",
 	"developer": "RaZooM",
-	"description": "API for saving level-specific data locally or in text objects",
+	"description": "API for saving level-specific data locally or in text objects", 
 
 	"dependencies": {
 		"cvolton.level-id-api": {
