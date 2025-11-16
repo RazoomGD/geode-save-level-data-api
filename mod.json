@@ -1,5 +1,5 @@
 {
-	"geode": "4.7.0",
+	"geode": "4.9.0",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -8,9 +8,9 @@
 	},
 	"id": "razoom.save_level_data_api",
 	"name": "Save Level Data API",
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"developer": "RaZooM",
-	"description": "API mod for saving level-specific data ",
+	"description": "API for saving level-specific data locally or in text objects",
 
 	"dependencies": {
 		"cvolton.level-id-api": {

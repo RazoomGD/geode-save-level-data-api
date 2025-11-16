@@ -6,6 +6,7 @@
 #include <Geode/modify/GJGameLevel.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/EditorPauseLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 
 
 using namespace geode::prelude;
@@ -84,7 +85,7 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 			if (obj->m_objectID != 914) continue;
 			auto textObject = static_cast<TextGameObject*>(obj);
 
-			if (textObject->m_text.size() < 2) continue;
+			if (textObject->m_text.size() < 20) continue;
 			if (textObject->m_text.at(0) != '{') continue;
 
 			auto parsedJson = matjson::parse(textObject->m_text);
@@ -185,6 +186,63 @@ class $modify(EditorPauseLayer) {
 	void saveLevel() {
 		reinterpret_cast<SaveLevelDataApiLEL*>(m_editorLayer)->writeTextObject();
 		EditorPauseLayer::saveLevel();
+	}
+};
+
+
+class $modify(SaveLevelDataApiPL, PlayLayer) {
+
+	struct Fields {
+		matjson::Value m_saveObject{};
+		bool m_textObjectLoaded = false;
+	};
+
+	static void onModify(auto& self) {
+		// first after original
+		if (!self.setHookPriority("PlayLayer::createObjectsFromSetupFinished", 50000)) {
+			log::warn("Failed to set hook priority");
+		}
+	}
+
+	void createObjectsFromSetupFinished() {
+		PlayLayer::createObjectsFromSetupFinished();
+		if (!m_fields->m_textObjectLoaded) {
+			loadTextObject();
+			m_fields->m_textObjectLoaded = true;
+		}
+	}
+	
+	void loadTextObject() {
+		if (!m_objects) return;
+		for (int i = 0; i < m_objects->count(); i++) {
+			auto obj = static_cast<GameObject*>(m_objects->objectAtIndex(i));
+			if (obj->m_objectID != 914) continue;
+			auto textObject = static_cast<TextGameObject*>(obj);
+	
+			if (textObject->m_text.size() < 20) continue;
+			if (textObject->m_text.at(0) != '{') continue;
+	
+			auto parsedJson = matjson::parse(textObject->m_text);
+			if (parsedJson.isErr()) continue;
+			auto body = parsedJson.unwrap().get("save_level_data_api");
+			if (body.isErr() || !body.unwrap().isObject()) continue;
+	
+			m_fields->m_saveObject = body.unwrap();
+	
+			if (Mod::get()->getSettingValue<bool>("debug-mode")) {
+				auto keyCount = m_fields->m_saveObject.size();
+				log::info("Text object successfully loaded! Found saved values of {} mod(s). Read-only", keyCount);
+			}	
+			break;
+		}
+	}
+
+	geode::Result<matjson::Value> getSavedValue(std::string_view modId, std::string_view key) {
+		if (!m_fields->m_textObjectLoaded) {
+			log::error("Objects aren't loaded yet! Can't get saved value!");
+			return Err("Not loaded yet!");
+		}
+		return json_utils::getVal(m_fields->m_saveObject, modId, key);
 	}
 };
 
@@ -305,23 +363,39 @@ geode::Result<matjson::Value> SaveLevelDataAPI::getSavedValue(
 	// check text object
 	if (checkTextObject) {
 		auto lel = LevelEditorLayer::get();
-		if (lel == nullptr) {
-			log::error("SaveLevelDataAPI::getSavedValue - You can't use 'checkTextObject' option if LevelEditorLayer::get() == nullptr");
-			log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
-			return Err("LevelEditorLayer::get() is nullptr");
+		auto pl = PlayLayer::get();
+
+		if (pl != nullptr && lel != nullptr) {
+			log::warn("Both PlayLayer::get() and LevelEditorLayer::get() are not null");
+			log::warn("Please, report me if you see this");
 		}
-		if (lel->m_level != level) {
-			log::error("SaveLevelDataAPI::getSavedValue - You can't use 'checkTextObject' option for a level that is not opened in the editor");
-			log::error("LevelEditorLayer::get()->m_level != level");
+		
+		if (lel == nullptr && pl == nullptr) {
+			log::error("SaveLevelDataAPI::getSavedValue - You can't use 'checkTextObject' option if LevelEditorLayer::get() == nullptr and PlayLayer::get() == nullptr");
 			log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
-			return Err("LevelEditorLayer::get()->m_level != level");
+			return Err("LevelEditorLayer::get() and PlayLayer::get() are both nullptr");
 		}
-		auto res = reinterpret_cast<SaveLevelDataApiLEL*>(lel)->getSavedValue(mod->getID(), key);
-		if (res.isOk()) {
-			return res;
+		
+		if (lel != nullptr) { // LevelEditorLayer
+			if (lel->m_level != level) {
+				log::error("SaveLevelDataAPI::getSavedValue - LevelEditorLayer::get()->m_level != level");
+				log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
+				return Err("LevelEditorLayer::get()->m_level != level");
+			}
+			auto res = reinterpret_cast<SaveLevelDataApiLEL*>(lel)->getSavedValue(mod->getID(), key);
+			if (res.isOk()) return res;
+		}
+
+		if (pl != nullptr) { // PlayLayer
+			if (pl->m_level != level) {
+				log::error("SaveLevelDataAPI::getSavedValue - PlayLayer::get()->m_level != level");
+				log::error("But if you REALLY need it, I can add this functionality. (ask me in GitHub issues)");
+				return Err("PlayLayer::get()->m_level != level");
+			}
+			auto res = reinterpret_cast<SaveLevelDataApiPL*>(pl)->getSavedValue(mod->getID(), key);
+			if (res.isOk()) return res;
 		}
 	}
-
 	return Err("Not found");
 };
 

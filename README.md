@@ -8,8 +8,23 @@
 With this mod you can easily store and handle all level-specific data of your mod.
 
 **Mod provides two saving options:**
+
 - saving values to the local **save file** - your values will be available locally on your device
-- saving values to the special **text object** inside the level – values that you save will be available to everyone even after sharing or publishing the level. If they also use your mod, they can access these values as well.
+- saving values to the special **text object** inside the level – values that will be available to everyone even after sharing/publishing the level. If they also use your mod, they can access these values as well.
+
+
+## Table of contents
+
+- [Save Level Data API](#save-level-data-api)
+  - [Table of contents](#table-of-contents)
+  - [Dependency](#dependency)
+  - [Quick example](#quick-example)
+  - [Data in text objects](#data-in-text-objects)
+  - [API Reference](#api-reference)
+  - [Important notes!](#important-notes)
+  - [How it stores the data](#how-it-stores-the-data)
+  - [Bugs, questions](#bugs-questions)
+
 
 
 ## Dependency
@@ -27,7 +42,6 @@ And this to your `.cpp` file:
 ```cpp
 #include <razoom.save_level_data_api/include/SaveLevelDataApi.hpp>
 ```
-
 
 
 ## Quick example
@@ -68,6 +82,21 @@ class $modify(EditorUI) {
     }
 };
 ```
+
+## Data in text objects
+
+*Read this if you want to store the data of your mod in text object*
+
+- Inside the editor you can save and load the data:
+  - Text object data is loaded with the level (`LevelEditorLayer::createObjectsFromSetup`). In `LevelEditorLayer::init` and `EditorUI::init` data is already available
+  - The data is saved with the level (`EditorPauseLayer::saveLevel`). All values set after `EditorPauseLayer::saveLevel` will be discarded
+  - You can enable the **debug mode** in mod settings to preview the text object at {0,0} coordinates
+
+- On `PlayLayer` you have a **read-only** access to the text object data:
+  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, it is **NOT** available in `PlayLayer::init`. First place data is available is `PlayLayer::createObjectsFromSetupFinished`
+  - Data is read-only
+  - Minimum mod version is `v1.0.3`
+
 
 ## API Reference
 
@@ -115,7 +144,7 @@ Get previously saved value for the level:
 
 - If you save/get data to/from the text object (e.g `SaveLevelDataAPI::setSavedValue(?, ?, ?, ?, true)`) the level must be currently opened in the editor and `LevelEditorLayer::get()` must be not null
 
-- If you save data to the text object you must do it before the `EditorPauseLayer::saveLevel()` call. For example if you call `SaveLevelDataAPI::setSavedValue` in the EditorUI->m_fields destructor, yoru values won't be saved
+- If you save data to the text object you must do it before the `EditorPauseLayer::saveLevel()` call. For example if you call `SaveLevelDataAPI::setSavedValue` in the EditorUI->m_fields destructor, your values won't be saved
 
 - If you save/get data to/from the save file (e.g `SaveLevelDataAPI::setSavedValue(?, ?, ?, true, ?)`) you can do it from **any** place in the game
 
