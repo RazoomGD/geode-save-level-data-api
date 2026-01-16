@@ -41,7 +41,7 @@ jobs:
         with:
           combine: true
           target: ${{ matrix.config.target }}
-          sdk: '4.9.0'
+          sdk: 'nightly'
           bindings: RaZooM-s-organization/bindings-fork-org
 
   package:
