@@ -42,7 +42,7 @@ jobs:
           combine: true
           target: ${{ matrix.config.target }}
           sdk: '4.9.0'
-          bindings: RazoomGD/bindings-fork
+          bindings: RaZooM-s-organization/bindings-fork-org
 
   package:
     name: Package builds
