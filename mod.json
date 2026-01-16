@@ -8,7 +8,7 @@
 	},
 	"id": "razoom.save_level_data_api",
 	"name": "Save Level Data API",
-	"version": "v1.0.3",
+	"version": "v1.0.4",
 	"developer": "RaZooM",
 	"description": "API for saving level-specific data locally or in text objects", 
 
@@ -34,8 +34,8 @@
 
 	"settings": {
 		"debug-mode": {
-			"name": "Text object at {0,0} (for developers)",
-			"description": "Changes text object position to (0,0)",
+			"name": "Debug mode (for developers)",
+			"description": "When enabled, text object is NOT deleted from the level and is placed at {0,0}",
 			"type": "bool",
 			"default": false
 		}

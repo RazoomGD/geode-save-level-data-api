@@ -34,7 +34,7 @@ Add this to the dependencies in your `mod.json` file:
 ```json
 "razoom.save_level_data_api": {
     "importance": "required",
-    "version": ">=1.0.0"
+    "version": ">=1.0.4"
 }
 ```
 
@@ -115,7 +115,7 @@ class $modify(PlayLayer) {
   - You can enable the **debug mode** in mod settings to preview the text object at {0,0} coordinates
 
 - On `PlayLayer` you have a **read-only** access to the text object data:
-  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, data is **NOT ALWAYS** available in `PlayLayer::init`. First place data is available is `PlayLayer::createObjectsFromSetupFinished`. So, please, get your data like in the example above.
+  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, data is **NOT ALWAYS** available in `PlayLayer::init`. First place data is guaranteed to be available is `PlayLayer::createObjectsFromSetupFinished`. So, please, get your data like in the example above.
   - Data is read-only
   - Minimum mod version is `v1.0.3`
 
@@ -198,7 +198,7 @@ Get previously saved value for the level:
 
 - In the text object inside the level:
 
-  This object is placed at (x,y) = (-9999,-9999). If you want to inspect this object, enable positioning to (0,0) in the mod settings
+  This object is placed at (x,y) = (-9876,-9876). If you want to inspect this object, enable positioning to (0,0) in the mod settings
 
   ![image](assets/image-1.png)
 

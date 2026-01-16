@@ -54,8 +54,11 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 	void createObjectsFromSetup(gd::string& p0) {
 		LevelEditorLayer::createObjectsFromSetup(p0);
 		if (!m_fields->m_textObjectLoaded) {
-			loadTextObject();
+			auto obj = editorLoadTextObject();
 			m_fields->m_textObjectLoaded = true;
+			if (obj && !Mod::get()->getSettingValue<bool>("debug-mode")) {
+				removeObject(obj, true);
+			}
 		}
 	}
 
@@ -78,8 +81,8 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 	}
 
 
-	void loadTextObject() {
-		if (!m_objects) return;
+	TextGameObject* editorLoadTextObject() {
+		if (!m_objects) return nullptr;
 		for (int i = 0; i < m_objects->count(); i++) {
 			auto obj = static_cast<GameObject*>(m_objects->objectAtIndex(i));
 			if (obj->m_objectID != 914) continue;
@@ -102,17 +105,18 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 				auto keyCount = m_fields->m_saveObject.size();
 				log::info("Text object successfully loaded! Found saved values of {} mod(s)", keyCount);
 			} else {
-				textObject->setPosition(ccp(-9999, -9999));
+				textObject->setPosition(ccp(-9876, -9876));
 				textObject->setRotation(0.f);
 				textObject->setScale(0.1f);
 			}
-			break;
+			return textObject;
 		}
+		return nullptr;
 	}
 
 
-	void writeTextObject() {
-		if (!m_objects) return;
+	TextGameObject* writeTextObject() {
+		if (!m_objects) return nullptr;
 
 		TextGameObject* textObject = nullptr;
 
@@ -143,17 +147,17 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 		}
 
 		if (!textObject) {
-			if (m_fields->m_saveObject.size() == 0) return;
+			if (m_fields->m_saveObject.size() == 0) return nullptr;
 			short tmp = m_currentLayer;
 			m_currentLayer = -1;
 			textObject = static_cast<TextGameObject*>(createObject(914, ccp(0,0), true));
 			m_currentLayer = tmp;
-			if (!textObject) return;
+			if (!textObject) return nullptr;
 		}
 
 		if (m_fields->m_saveObject.size() == 0) {
 			removeObject(textObject, true); // true - noUndo
-			return;
+			return nullptr;
 		}
 
 		if (Mod::get()->getSettingValue<bool>("debug-mode")) {
@@ -162,7 +166,7 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 			textObject->setScale(0.5f);
 			log::info("Text object successfully saved!");
 		} else {
-			textObject->setPosition(ccp(-9999, -9999));
+			textObject->setPosition(ccp(-9876, -9876));
 			textObject->setRotation(0.f);
 			textObject->setScale(0.1f);
 		}
@@ -172,6 +176,8 @@ class $modify(SaveLevelDataApiLEL, LevelEditorLayer) {
 				{{"save_level_data_api", m_fields->m_saveObject}}
 			).dump(), false
 		);
+
+		return textObject;
 	}
 };
 
@@ -184,8 +190,11 @@ class $modify(EditorPauseLayer) {
 		}
 	}
 	void saveLevel() {
-		reinterpret_cast<SaveLevelDataApiLEL*>(m_editorLayer)->writeTextObject();
+		auto obj = reinterpret_cast<SaveLevelDataApiLEL*>(m_editorLayer)->writeTextObject();
 		EditorPauseLayer::saveLevel();
+		if (obj && !Mod::get()->getSettingValue<bool>("debug-mode")) {
+			m_editorLayer->removeObject(obj, true);
+		}
 	}
 };
 
@@ -207,12 +216,12 @@ class $modify(SaveLevelDataApiPL, PlayLayer) {
 	void createObjectsFromSetupFinished() {
 		PlayLayer::createObjectsFromSetupFinished();
 		if (!m_fields->m_textObjectLoaded) {
-			loadTextObject();
+			playlayerLoadTextObject();
 			m_fields->m_textObjectLoaded = true;
 		}
 	}
 	
-	void loadTextObject() {
+	void playlayerLoadTextObject() {
 		if (!m_objects) return;
 		for (int i = 0; i < m_objects->count(); i++) {
 			auto obj = static_cast<GameObject*>(m_objects->objectAtIndex(i));
@@ -276,6 +285,9 @@ class $modify(GJGameLevel) {
 		}
 	}
 };
+
+
+// ------------------------------- API METHODS -------------------------------
 
 
 void SaveLevelDataAPI::setSavedValue(
