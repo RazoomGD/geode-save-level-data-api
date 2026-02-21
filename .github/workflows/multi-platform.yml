@@ -41,7 +41,8 @@ jobs:
         with:
           combine: true
           target: ${{ matrix.config.target }}
-          # sdk: 'nightly'
+          sdk: nightly
+          cli: nightly
           # bindings: RaZooM-s-organization/bindings-fork-org
 
   package:
@@ -52,6 +53,8 @@ jobs:
     steps:
       - uses: geode-sdk/build-geode-mod/combine@main
         id: build
+        with:
+          cli: nightly
 
       - uses: actions/upload-artifact@v4
         with:
