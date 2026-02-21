@@ -41,8 +41,8 @@ jobs:
         with:
           combine: true
           target: ${{ matrix.config.target }}
-          sdk: 'nightly'
-          bindings: RaZooM-s-organization/bindings-fork-org
+          # sdk: 'nightly'
+          # bindings: RaZooM-s-organization/bindings-fork-org
 
   package:
     name: Package builds
