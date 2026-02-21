@@ -19,8 +19,8 @@ With this mod you can easily store and handle all level-specific data of your mo
   - [Table of contents](#table-of-contents)
   - [Dependency](#dependency)
   - [Quick example](#quick-example)
-  - [Data in text objects](#data-in-text-objects)
   - [API Reference](#api-reference)
+  - [Data in text objects](#data-in-text-objects)
   - [Important notes!](#important-notes)
   - [How it stores the data](#how-it-stores-the-data)
   - [Bugs, questions](#bugs-questions)
@@ -32,10 +32,7 @@ With this mod you can easily store and handle all level-specific data of your mo
 Add this to the dependencies in your `mod.json` file:
 
 ```json
-"razoom.save_level_data_api": {
-    "importance": "required",
-    "version": ">=1.0.4"
-}
+"razoom.save_level_data_api": ">=1.0.5"
 ```
 
 And this to your `.cpp` file:
@@ -105,21 +102,6 @@ class $modify(PlayLayer) {
 ```
 
 
-## Data in text objects
-
-*Read this if you want to store the data of your mod in text object*
-
-- Inside the editor you can save and load the data:
-  - Text object data is loaded with the level (`LevelEditorLayer::createObjectsFromSetup`). In `LevelEditorLayer::init` and `EditorUI::init` data is already available
-  - The data is saved with the level (`EditorPauseLayer::saveLevel`). All values set after `EditorPauseLayer::saveLevel` will be discarded
-  - You can enable the **debug mode** in mod settings to preview the text object at {0,0} coordinates
-
-- On `PlayLayer` you have a **read-only** access to the text object data:
-  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, data is **NOT ALWAYS** available in `PlayLayer::init`. First place data is guaranteed to be available is `PlayLayer::createObjectsFromSetupFinished`. So, please, get your data like in the example above.
-  - Data is read-only
-  - Minimum mod version is `v1.0.3`
-
-
 ## API Reference
 
 ```cpp
@@ -156,10 +138,24 @@ Get previously saved value for the level:
 - `key` - unique key of your value
 - `checkSaveFile` - if value should be taken from the save file of YOUR mod
 - `checkTextObject` - if value should be taken from the special text object inside the level
-    - If both `checkSaveFile` and `checkTextObject` are set to `true`, the it checks the save file first. If the value is not found there, it then checks the text object.
+    - If both `checkSaveFile` and `checkTextObject` are set to `true`, then it checks the save file first. And if the value is found there, it SKIPS the text object check.
 - `mod` - mod
 - **returns**: the value or Err() if wasn't found
 
+
+## Data in text objects
+
+*Read this if you want to store the data of your mod in text object*
+
+- Inside the editor you can save and load the data:
+  - Text object data is loaded with the level (`LevelEditorLayer::createObjectsFromSetup`). In `LevelEditorLayer::init` and `EditorUI::init` data is already available
+  - The data is saved with the level (`EditorPauseLayer::saveLevel`). All values set after `EditorPauseLayer::saveLevel` will be discarded
+  - You can enable the **debug mode** in mod settings to preview the text object at {0,0} coordinates
+
+- On `PlayLayer` you have a **read-only** access to the text object data:
+  - Text object data is loaded with the level, **BUT** since the level is loaded asynchronously and in batches, data is **NOT ALWAYS** available in `PlayLayer::init`. First place data is guaranteed to be available is `PlayLayer::createObjectsFromSetupFinished`. So, please, get your data like in the example above.
+  - Data is read-only
+  - Minimum mod version is `v1.0.3`
 
 
 ## Important notes!

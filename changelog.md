@@ -1,3 +1,6 @@
+# 1.0.5
+- Port to GD 2.2081
+
 # 1.0.4
 - Text object is now removed from the level during the editing (unless in debug mode)
 - Change save object coordinates because of issue in another mod

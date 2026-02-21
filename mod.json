@@ -1,22 +1,19 @@
 {
-	"geode": "4.10.0",
+	"geode": "5.0.0-beta.3",
 	"gd": {
-		"win": "2.2074",
-		"android": "2.2074",
-		"mac": "2.2074",
-		"ios": "2.2074"
+		"win": "2.2081",
+		"android": "2.2081",
+		"mac": "2.2081",
+		"ios": "2.2081"
 	},
 	"id": "razoom.save_level_data_api",
 	"name": "Save Level Data API",
-	"version": "v1.0.4",
+	"version": "v1.0.5",
 	"developer": "RaZooM",
 	"description": "API for saving level-specific data locally or in text objects", 
 
 	"dependencies": {
-		"cvolton.level-id-api": {
-			"version": "v1.0.0",
-			"importance": "required"
-		}
+		"cvolton.level-id-api": "v2.0.0"
 	},
 
 	"api": {
